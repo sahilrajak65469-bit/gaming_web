@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Police Station Finder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .search-section {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            margin-bottom: 30px;
+        }
+
+        .search-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #2c3e50;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 12px;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-btn {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            align-self: flex-end;
+            transition: background 0.3s;
+        }
+
+        .search-btn:hover {
+            background: #5568d3;
+        }
+
+        .results-section {
+            margin-top: 30px;
+        }
+
+        .results-header {
+            color: white;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+
+        .police-station-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            margin-bottom: 15px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .police-station-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .station-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 12px;
+        }
+
+        .station-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 12px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .info-icon {
+            font-size: 1.2rem;
+            color: #667eea;
+            margin-top: 2px;
+            min-width: 20px;
+        }
+
+        .info-content {
+            flex: 1;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #34495e;
+            font-size: 0.9rem;
+        }
+
+        .info-value {
+            color: #555;
+            margin-top: 3px;
+        }
+
+        .no-results {
+            background: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 12px;
+            color: #555;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .no-results p {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .search-row {
+                grid-template-columns: 1fr;
+            }
+
+            .station-info {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        .filter-options {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .filter-tag {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .filter-tag:hover {
+            background: #5568d3;
+        }
+
+        .emergency-info {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            margin-top: 20px;
+            color: #856404;
+        }
+
+        .emergency-info strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚔 Police Station Finder</h1>
+            <p>Find the nearest police station in your area</p>
+        </div>
+
+        <div class="search-section">
+            <div class="search-row">
+                <div class="form-group">
+                    <label for="state">Select State</label>
+                    <select id="state" onchange="updateDistricts()">
+                        <option value="">-- Choose State --</option>
+                        <option value="maharashtra">Maharashtra</option>
+                        <option value="delhi">Delhi</option>
+                        <option value="karnataka">Karnataka</option>
+                        <option value="tamil-nadu">Tamil Nadu</option>
+                        <option value="uttar-pradesh">Uttar Pradesh</option>
+                        <option value="west-bengal">West Bengal</option>
+                        <option value="punjab">Punjab</option>
+                        <option value="rajasthan">Rajasthan</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="district">Select District</label>
+                    <select id="district">
+                        <option value="">-- Choose District --</option>
+                    </select>
+                </div>
+
+                <button class="search-btn" onclick="searchPoliceStations()">Search</button>
+            </div>
+
+            <div class="filter-options" id="filterOptions" style="display: none;">
+                <strong>Quick Filter:</strong>
+                <div id="quickFilters"></div>
+            </div>
+
+            <div class="emergency-info">
+                <strong>Emergency Contact:</strong>
+                <span>📞 Call 100 for immediate police assistance (India-wide)</span>
+            </div>
+        </div>
+
+        <div class="results-section" id="resultsSection" style="display: none;">
+            <div class="results-header" id="resultsHeader"></div>
+            <div id="resultsList"></div>
+        </div>
+    </div>
+
+    <script>
+        // Database of police stations by state and district
+        const policeStations = {
+            maharashtra: {
+                mumbai: [
+                    {
+                        name: "Colaba Police Station",
+                        address: "Colaba, Mumbai-400039",
+                        contact: "022-2218-1100",
+                        email: "colaba.ps@mcps.in",
+                        type: "Urban",
+                        jurisdiction: "South Mumbai"
+                    },
+                    {
+                        name: "Byculla Police Station",
+                        address: "Byculla, Mumbai-400008",
+                        contact: "022-2373-2222",
+                        email: "byculla.ps@mcps.in",
+                        type: "Urban",
+                        jurisdiction: "Central Mumbai"
+                    },
+                    {
+                        name: "Fort Police Station",
+                        address: "Fort, Mumbai-400001",
+                        contact: "022-2265-6666",
+                        email: "fort.ps@mcps.in",
+                        type: "Urban",
+                        jurisdiction: "Fort Area"
+                    },
+                    {
+                        name: "Dadar Police Station",
+                        address: "Dadar, Mumbai-400014",
+                        contact: "022-2414-8888",
+                        email: "dadar.ps@mcps.in",
+                        type: "Urban",
+                        jurisdiction: "Central Mumbai"
+                    }
+                ],
+                pune: [
+                    {
+                        name: "Vimantal Nagar Police Station",
+                        address: "Vimantal Nagar, Pune-411017",
+                        contact: "020-2559-1111",
+                        email: "vimantal.ps@pps.in",
+                        type: "Urban",
+                        jurisdiction: "East Pune"
+                    },
+                    {
+                        name: "Camp Police Station",
+                        address: "Camp, Pune-411001",
+                        contact: "020-2605-2222",
+                        email: "camp.ps@pps.in",
+                        type: "Urban",
+                        jurisdiction: "Central Pune"
+                    },
+                    {
+                        name: "Kothrud Police Station",
+                        address: "Kothrud, Pune-411038",
+                        contact: "020-2549-3333",
+                        email: "kothrud.ps@pps.in",
+                        type: "Urban",
+                        jurisdiction: "West Pune"
+                    }
+                ],
+                nagpur: [
+                    {
+                        name: "Sitabuldi Police Station",
+                        address: "Sitabuldi, Nagpur-440012",
+                        contact: "0712-2532-222",
+                        email: "sitabuldi.ps@nps.in",
+                        type: "Urban",
+                        jurisdiction: "Central Nagpur"
+                    },
+                    {
+                        name: "Civil Lines Police Station",
+                        address: "Civil Lines, Nagpur-440001",
+                        contact: "0712-2532-333",
+                        email: "civillines.ps@nps.in",
+                        type: "Urban",
+                        jurisdiction: "North Nagpur"
+                    }
+                ]
+            },
+            delhi: {
+                "central-delhi": [
+                    {
+                        name: "Kasturba Nagar Police Station",
+                        address: "Kasturba Nagar, New Delhi-110001",
+                        contact: "011-2323-4455",
+                        email: "kasturba.ps@dps.in",
+                        type: "Urban",
+                        jurisdiction: "Central Delhi"
+                    },
+                    {
+                        name: "New Delhi Police Station",
+                        address: "New Delhi, Delhi-110001",
+                        contact: "011-2331-2000",
+                        email: "newdelhi.ps@dps.in",
+                        type: "Urban",
+                        jurisdiction: "Central Delhi"
+                    }
+                ],
+                "south-delhi": [
+                    {
+                        name: "Mehrauli Police Station",
+                        address: "Mehrauli, New Delhi-110030",
+                        contact: "011-4103-2000",
+                        email: "mehrauli.ps@dps.in",
+                        type: "Urban",
+                        jurisdiction: "South Delhi"
+                    },
+                    {
+                        name: "Sangam Vihar Police Station",
+                        address: "Sangam Vihar, Delhi-110062",
+                        contact: "011-4103-3000",
+                        email: "sangamvihar.ps@dps.in",
+                        type: "Urban",
+                        jurisdiction: "South Delhi"
+                    }
+                ],
+                "north-delhi": [
+                    {
+                        name: "Alipur Police Station",
+                        address: "Alipur, Delhi-110007",
+                        contact: "011-2753-2000",
+                        email: "alipur.ps@dps.in",
+                        type: "Urban",
+                        jurisdiction: "North Delhi"
+                    },
+                    {
+                        name: "Burari Police Station",
+                        address: "Burari, Delhi-110084",
+                        contact: "011-4114-2000",
+                        email: "burari.ps@dps.in",
+                        type: "Urban",
+                        jurisdiction: "North Delhi"
+                    }
+                ]
+            },
+            karnataka: {
+                bangalore: [
+                    {
+                        name: "Koramangala Police Station",
+                        address: "Koramangala, Bangalore-560034",
+                        contact: "080-2555-6666",
+                        email: "koramangala.ps@bps.in",
+                        type: "Urban",
+                        jurisdiction: "East Bangalore"
+                    },
+                    {
+                        name: "Whitefield Police Station",
+                        address: "Whitefield, Bangalore-560066",
+                        contact: "080-4114-4444",
+                        email: "whitefield.ps@bps.in",
+                        type: "Urban",
+                        jurisdiction: "East Bangalore"
+                    },
+                    {
+                        name: "Indiranagar Police Station",
+                        address: "Indiranagar, Bangalore-560038",
+                        contact: "080-4113-3333",
+                        email: "indiranagar.ps@bps.in",
+                        type: "Urban",
+                        jurisdiction: "Central Bangalore"
+                    }
+                ],
+                mysore: [
+                    {
+                        name: "Fort Police Station",
+                        address: "Fort, Mysore-570001",
+                        contact: "0821-2423-111",
+                        email: "fort.ps@mps.in",
+                        type: "Urban",
+                        jurisdiction: "Central Mysore"
+                    }
+                ]
+            },
+            "tamil-nadu": {
+                chennai: [
+                    {
+                        name: "Anna Nagar Police Station",
+                        address: "Anna Nagar, Chennai-600040",
+                        contact: "044-2625-5555",
+                        email: "annanagar.ps@cps.in",
+                        type: "Urban",
+                        jurisdiction: "West Chennai"
+                    },
+                    {
+                        name: "T. Nagar Police Station",
+                        address: "T. Nagar, Chennai-600017",
+                        contact: "044-2434-6666",
+                        email: "tnagar.ps@cps.in",
+                        type: "Urban",
+                        jurisdiction: "Central Chennai"
+                    }
+                ],
+                coimbatore: [
+                    {
+                        name: "Coimbatore City Police Station",
+                        address: "Coimbatore-641001",
+                        contact: "0422-2218-888",
+                        email: "coimbatore.ps@cps.in",
+                        type: "Urban",
+                        jurisdiction: "Central Coimbatore"
+                    }
+                ]
+            },
+            "uttar-pradesh": {
+                lucknow: [
+                    {
+                        name: "Hazratganj Police Station",
+                        address: "Hazratganj, Lucknow-226001",
+                        contact: "0522-2284-444",
+                        email: "hazratganj.ps@ups.in",
+                        type: "Urban",
+                        jurisdiction: "Central Lucknow"
+                    },
+                    {
+                        name: "Gomti Nagar Police Station",
+                        address: "Gomti Nagar, Lucknow-226010",
+                        contact: "0522-2325-555",
+                        email: "gomtinagar.ps@ups.in",
+                        type: "Urban",
+                        jurisdiction: "East Lucknow"
+                    }
+                ],
+                varanasi: [
+                    {
+                        name: "Kotwali Police Station",
+                        address: "Kotwali, Varanasi-221001",
+                        contact: "0542-2206-666",
+                        email: "kotwali.ps@ups.in",
+                        type: "Urban",
+                        jurisdiction: "Central Varanasi"
+                    }
+                ]
+            },
+            "west-bengal": {
+                kolkata: [
+                    {
+                        name: "Alipore Police Station",
+                        address: "Alipore, Kolkata-700027",
+                        contact: "033-2424-5555",
+                        email: "alipore.ps@kps.in",
+                        type: "Urban",
+                        jurisdiction: "South Kolkata"
+                    },
+                    {
+                        name: "New Market Police Station",
+                        address: "New Market, Kolkata-700016",
+                        contact: "033-2229-6666",
+                        email: "newmarket.ps@kps.in",
+                        type: "Urban",
+                        jurisdiction: "Central Kolkata"
+                    }
+                ]
+            },
+            punjab: {
+                amritsar: [
+                    {
+                        name: "Cantonment Police Station",
+                        address: "Cantonment, Amritsar-143001",
+                        contact: "0183-2258-222",
+                        email: "cantonment.ps@pps.in",
+                        type: "Urban",
+                        jurisdiction: "Central Amritsar"
+                    },
+                    {
+                        name: "Model Town Police Station",
+                        address: "Model Town, Amritsar-143001",
+                        contact: "0183-2554-333",
+                        email: "modeltown.ps@pps.in",
+                        type: "Urban",
+                        jurisdiction: "East Amritsar"
+                    }
+                ],
+                ludhiana: [
+                    {
+                        name: "Ludhiana City Police Station",
+                        address: "Ludhiana-141008",
+                        contact: "0161-2456-444",
+                        email: "ludhiana.ps@pps.in",
+                        type: "Urban",
+                        jurisdiction: "Central Ludhiana"
+                    }
+                ]
+            },
+            rajasthan: {
+                jaipur: [
+                    {
+                        name: "Civil Lines Police Station",
+                        address: "Civil Lines, Jaipur-302006",
+                        contact: "0141-5193-222",
+                        email: "civillines.ps@jps.in",
+                        type: "Urban",
+                        jurisdiction: "North Jaipur"
+                    },
+                    {
+                        name: "City Police Station",
+                        address: "City, Jaipur-302001",
+                        contact: "0141-2369-333",
+                        email: "city.ps@jps.in",
+                        type: "Urban",
+                        jurisdiction: "Central Jaipur"
+                    }
+                ],
+                jodhpur: [
+                    {
+                        name: "Jodhpur City Police Station",
+                        address: "Jodhpur-342001",
+                        contact: "0291-2516-444",
+                        email: "jodhpur.ps@jps.in",
+                        type: "Urban",
+                        jurisdiction: "Central Jodhpur"
+                    }
+                ]
+            }
+        };
+
+        // Districts by state
+        const districtsByState = {
+            maharashtra: ["Mumbai", "Pune", "Nagpur", "Aurangabad", "Nashik"],
+            delhi: ["Central Delhi", "South Delhi", "North Delhi", "East Delhi", "West Delhi"],
+            karnataka: ["Bangalore", "Mysore", "Belgaum", "Hubli", "Mangalore"],
+            "tamil-nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruppur", "Salem"],
+            "uttar-pradesh": ["Lucknow", "Varanasi", "Agra", "Kanpur", "Noida"],
+            "west-bengal": ["Kolkata", "Howrah", "Darjeeling", "Siliguri", "Asansol"],
+            punjab: ["Amritsar", "Ludhiana", "Jalandhar", "Patiala", "Bathinda"],
+            rajasthan: ["Jaipur", "Jodhpur", "Udaipur", "Ajmer", "Bikaner"]
+        };
+
+        function updateDistricts() {
+            const state = document.getElementById('state').value.toLowerCase();
+            const districtSelect = document.getElementById('district');
+            districtSelect.innerHTML = '<option value="">-- Choose District --</option>';
+
+            if (state && districtsByState[state]) {
+                districtsByState[state].forEach(district => {
+                    const option = document.createElement('option');
+                    option.value = district.toLowerCase();
+                    option.textContent = district;
+                    districtSelect.appendChild(option);
+                });
+            }
+        }
+
+        function searchPoliceStations() {
+            const state = document.getElementById('state').value.toLowerCase();
+            const district = document.getElementById('district').value.toLowerCase();
+
+            if (!state || !district) {
+                alert('Please select both state and district');
+                return;
+            }
+
+            const stations = policeStations[state]?.[district] || [];
+
+            if (stations.length === 0) {
+                displayNoResults();
+                return;
+            }
+
+            displayResults(stations, state, district);
+        }
+
+        function displayResults(stations, state, district) {
+            const resultsSection = document.getElementById('resultsSection');
+            const resultsHeader = document.getElementById('resultsHeader');
+            const resultsList = document.getElementById('resultsList');
+
+            resultsHeader.textContent = `📍 Found ${stations.length} Police Station(s) in ${district.charAt(0).toUpperCase() + district.slice(1)}, ${state.charAt(0).toUpperCase() + state.slice(1)}`;
+
+            resultsList.innerHTML = '';
+
+            stations.forEach((station, index) => {
+                const card = document.createElement('div');
+                card.className = 'police-station-card';
+                card.innerHTML = `
+                    <div class="station-name">${index + 1}. ${station.name}</div>
+                    <div class="station-info">
+                        <div class="info-item">
+                            <div class="info-icon">📍</div>
+                            <div class="info-content">
+                                <div class="info-label">Address</div>
+                                <div class="info-value">${station.address}</div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">📞</div>
+                            <div class="info-content">
+                                <div class="info-label">Contact</div>
+                                <div class="info-value"><a href="tel:${station.contact}" style="color: #667eea; text-decoration: none;">${station.contact}</a></div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">✉️</div>
+                            <div class="info-content">
+                                <div class="info-label">Email</div>
+                                <div class="info-value"><a href="mailto:${station.email}" style="color: #667eea; text-decoration: none;">${station.email}</a></div>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-icon">🏢</div>
+                            <div class="info-content">
+                                <div class="info-label">Jurisdiction</div>
+                                <div class="info-value">${station.jurisdiction}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                resultsList.appendChild(card);
+            });
+
+            resultsSection.style.display = 'block';
+        }
+
+        function displayNoResults() {
+            const resultsSection = document.getElementById('resultsSection');
+            const resultsList = document.getElementById('resultsList');
+
+            resultsList.innerHTML = `
+                <div class="no-results">
+                    <p>❌ No police stations found for this location</p>
+                    <p>Please try a different state or district</p>
+                </div>
+            `;
+
+            resultsSection.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
